@@ -16,7 +16,7 @@ module.exports = {
         'vision-text-light': '#374151', // Dark text on light backgrounds
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['"Brush Script MT"', 'cursive'], // All sans-serif fonts will now be cursive
         mono: ['Fira Code', 'monospace'], // For code snippets
       },
     },
