@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 
 // Create a new Pool instance to manage database connections
 // The connection string is retrieved from environment variables for security and flexibility
+// MANUAL_CHANGE_REQUIRED: Ensure process.env.DATABASE_URL is correctly set in your .env file.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });

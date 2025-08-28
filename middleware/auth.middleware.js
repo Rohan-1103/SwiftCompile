@@ -20,6 +20,7 @@ const verifyToken = async (req, res, next) => {
 
   try {
     // Verify the token using the JWT secret
+    // MANUAL_CHANGE_REQUIRED: Ensure process.env.JWT_SECRET is correctly set in your .env file.
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Attach the user payload from the token to the request object

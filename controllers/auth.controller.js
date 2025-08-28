@@ -65,6 +65,7 @@ const login = async (req, res) => {
     };
 
     // Sign the JWT and send it in the response along with non-sensitive user data
+    // MANUAL_CHANGE_REQUIRED: Ensure process.env.JWT_SECRET is correctly set in your .env file.
     jwt.sign(
       payload,
       process.env.JWT_SECRET, // Secret key from environment variables
