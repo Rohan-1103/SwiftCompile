@@ -42,6 +42,28 @@ const FeatureCard = ({ icon: Icon, title, description }) => {
   );
 };
 
+const codeSnippets = [
+  `def hello_world():
+    print("Hello, World!")
+
+hello_world()`, // Python
+  `function greet(name) {
+    console.log(`Hello, ${name}!`);
+}
+greet("World");`, // JavaScript
+  `#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}`, // C++
+  `public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`, // Java
+];
+
 const HomePage = () => {
   const [currentSnippet, setCurrentSnippet] = useState('');
 
@@ -80,7 +102,7 @@ const HomePage = () => {
         >
           <Link
             to="/register"
-            className="px-10 py-5 rounded-full bg-vision-accent text-white text-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block glowing-button"
+            className="px-10 py-5 rounded-full bg-vision-primary text-white text-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block glowing-button"
           >
             Get Started for Free
           </Link>
@@ -124,6 +146,31 @@ const HomePage = () => {
               title="Version Control Integration"
               description="Seamlessly integrate with Git and other version control systems for efficient development workflows."
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Code Examples Section */}
+      <section className="py-20 px-4 bg-vision-light dark:bg-vision-dark">
+        <div className="container mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-12 text-vision-text-light dark:text-vision-text-dark">
+            Code Examples
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {codeSnippets.map((snippet, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
+                className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto"
+              >
+                <pre className="text-left font-mono text-green-400 text-sm md:text-base overflow-x-auto h-40">
+                  <TypingEffect text={snippet} speed={20} />
+                </pre>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
