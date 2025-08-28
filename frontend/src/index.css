@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Basic styles for the application */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+/* Custom properties for theme management */
+:root {
+  --color-background: #F9FAFB; /* vision-light */
+  --color-text: #374151; /* vision-text-light */
+  --color-primary: #6366F1; /* vision-primary */
+  --color-accent: #EC4899; /* vision-accent */
+}
+
+[data-theme='dark'] {
+  --color-background: #1F2937; /* vision-dark */
+  --color-text: #E5E7EB; /* vision-text-dark */
+}
+
+/* Global styles for links and buttons */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* For the animated gradient background on the homepage */
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, #6366F1, #8B5CF6, #EC4899, #6366F1);
+  background-size: 400% 400%;
+  animation: gradientAnimation 15s ease infinite;
+}
+
+/* For the backdrop-blur effect on the Navbar */
+.backdrop-blur-nav {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.1); /* Light transparency */
+}
+
+[data-theme='dark'] .backdrop-blur-nav {
+  background-color: rgba(31, 41, 55, 0.5); /* Dark transparency */
+}
+
+/* For input focus effect */
+.input-focus-highlight:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+}
+
