@@ -10,7 +10,7 @@ const codeSnippets = [
 
 hello_world()`, // Python
   `function greet(name) {
-    console.log(`Hello, ${name}!`);
+    console.log("Hello, " + name + "!");
 }
 greet("World");`, // JavaScript
   `#include <iostream>
