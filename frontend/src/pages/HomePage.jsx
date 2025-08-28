@@ -10,7 +10,7 @@ const codeSnippets = [
 
 hello_world()`, // Python
   `function greet(name) {
-    console.log("Hello, ".concat(name, "!"));
+    console.log(`Hello, ${name}!`);
 }
 greet("World");`, // JavaScript
   `#include <iostream>
@@ -41,28 +41,6 @@ const FeatureCard = ({ icon: Icon, title, description }) => {
     </motion.div>
   );
 };
-
-const codeSnippets = [
-  `def hello_world():
-    print("Hello, World!")
-
-hello_world()`, // Python
-  `function greet(name) {
-    console.log(`Hello, ${name}!`);
-}
-greet("World");`, // JavaScript
-  `#include <iostream>
-
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
-}`, // C++
-  `public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}`, // Java
-];
 
 const HomePage = () => {
   const [currentSnippet, setCurrentSnippet] = useState('');
