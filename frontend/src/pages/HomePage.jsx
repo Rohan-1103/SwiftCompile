@@ -5,25 +5,92 @@ import { Code, Cloud, Rocket, Shield } from 'lucide-react';
 import TypingEffect from '../components/TypingEffect';
 
 const codeSnippets = [
-  `def hello_world():
-    print("Hello, World!")
+  `def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
 
-hello_world()`, // Python
-  `function greet(name) {
-    console.log("Hello, " + name + "!");
-}
-greet("World");`, // JavaScript
-  `#include <iostream>
+print(factorial(5))`, // Python - Factorial
+  `const fibonacci = (num) => {
+    let a = 1, b = 1, temp;
+    while (num > 0) {
+      temp = a;
+      a = a + b;
+      b = temp;
+      num--;
+    }
+    return b;
+  };
+console.log(fibonacci(8));`, // JavaScript - Fibonacci
+  `#include <vector>
+#include <algorithm>
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
-}`, // C++
-  `public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
+    std::vector<int> arr = {5, 2, 8, 1, 9};
+    std::sort(arr.begin(), arr.end());
+    for (int x : arr) {
+        // std::cout << x << " ";
     }
-}`, // Java
+    return 0;
+}`, // C++ - Sorting Vector
+  `public class QuickSort {
+    static void sort(int[] arr, int low, int high) {
+        if (low < high) {
+            int pi = partition(arr, low, high);
+            sort(arr, low, pi - 1);
+            sort(arr, pi + 1, high);
+        }
+    }
+    static int partition(int[] arr, int low, int high) {
+        int pivot = arr[high];
+        int i = (low - 1);
+        for (int j = low; j < high; j++) {
+            if (arr[j] < pivot) {
+                i++;
+                int temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+        int temp = arr[i + 1];
+        arr[i + 1] = arr[high];
+        arr[high] = temp;
+        return i + 1;
+    }
+}`, // Java - QuickSort
+  `package main
+
+import "fmt"
+
+func main() {
+	messages := make(chan string)
+	go func() { messages <- "ping" }()
+	msg := <-messages
+	fmt.Println(msg)
+}`, // Go - Channels
+  `fn main() {
+    let mut sum = 0;
+    for i in 1..10 {
+        sum += i;
+    }
+    println!("Sum: {}", sum);
+}`, // Rust - Loop and Sum
+  `<?php
+class Car {
+  public $color;
+  public $model;
+  public function __construct($color, $model) {
+    $this->color = $color;
+    $this->model = $model;
+  }
+  public function message() {
+    return "My car is a " . $this->color . " " . $this->model . "!";
+  }
+}
+$myCar = new Car("red", "Volvo");
+// echo $myCar -> message();
+?>`, // PHP - Class
 ];
 
 const FeatureCard = ({ icon: Icon, title, description }) => {
@@ -43,12 +110,6 @@ const FeatureCard = ({ icon: Icon, title, description }) => {
 };
 
 const HomePage = () => {
-  const [currentSnippet, setCurrentSnippet] = useState('');
-
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * codeSnippets.length);
-    setCurrentSnippet(codeSnippets[randomIndex]);
-  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-vision-light dark:bg-vision-dark text-vision-text-light dark:text-vision-text-dark">
@@ -62,21 +123,68 @@ const HomePage = () => {
         >
           Code, Compile, Conquer. Instantly.
         </motion.h1>
+
+        {/* Animated Code Snippets */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto"
+          className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto z-10"
         >
           <pre className="text-left font-mono text-green-400 text-lg md:text-xl overflow-x-auto">
-            <TypingEffect text={currentSnippet} speed={50} />
+            <TypingEffect text={codeSnippets[0]} speed={50} />
           </pre>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, delay: 1.0 }}
+          className="absolute top-1/4 left-10 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden lg:block"
+        >
+          <pre className="text-left font-mono text-blue-300 text-sm">
+            <TypingEffect text={codeSnippets[1]} speed={40} />
+          </pre>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, delay: 1.5 }}
+          className="absolute bottom-1/4 right-10 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden lg:block"
+        >
+          <pre className="text-left font-mono text-red-300 text-sm">
+            <TypingEffect text={codeSnippets[2]} speed={45} />
+          </pre>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: -100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 2.0 }}
+          className="absolute top-10 right-1/4 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden md:block"
+        >
+          <pre className="text-left font-mono text-yellow-300 text-xs">
+            <TypingEffect text={codeSnippets[3]} speed={35} />
+          </pre>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 2.5 }}
+          className="absolute bottom-10 left-1/4 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden md:block"
+        >
+          <pre className="text-left font-mono text-purple-300 text-xs">
+            <TypingEffect text={codeSnippets[4]} speed={30} />
+          </pre>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-10"
+          className="mt-10 z-10"
         >
           <Link
             to="/register"
@@ -128,30 +236,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Code Examples Section */}
-      <section className="py-20 px-4 bg-vision-light dark:bg-vision-dark">
-        <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12 text-vision-text-light dark:text-vision-text-dark">
-            Code Examples
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {codeSnippets.map((snippet, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
-                className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto"
-              >
-                <pre className="text-left font-mono text-green-400 text-sm md:text-base overflow-x-auto h-40">
-                  <TypingEffect text={snippet} speed={20} />
-                </pre>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* Footer */}
       <footer className="py-8 bg-vision-dark text-vision-text-dark text-center text-sm">

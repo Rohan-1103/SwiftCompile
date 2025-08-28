@@ -45,7 +45,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full backdrop-blur-nav bg-white/30 dark:bg-vision-dark/50 shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-4xl font-bold text-vision-primary flex items-center">
+        <Link to="/" className="text-6xl font-bold font-cursive text-vision-primary flex items-center">
           <Rocket size={40} className="mr-2" /> SwiftCompile
         </Link>
 
