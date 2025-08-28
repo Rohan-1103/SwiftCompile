@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Code, Cloud, Rocket, Shield } from 'lucide-react';
 import TypingEffect from '../components/TypingEffect';
+
+const codeSnippets = [
+  `def hello_world():
+    print("Hello, World!")
+
+hello_world()`, // Python
+  `function greet(name) {
+    console.log("Hello, ".concat(name, "!"));
+}
+greet("World");`, // JavaScript
+  `#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}`, // C++
+  `public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`, // Java
+];
 
 const FeatureCard = ({ icon: Icon, title, description }) => {
   return (
@@ -21,10 +43,12 @@ const FeatureCard = ({ icon: Icon, title, description }) => {
 };
 
 const HomePage = () => {
-  const codeSnippet = `def hello_world():
-    print("Hello, World!")
+  const [currentSnippet, setCurrentSnippet] = useState('');
 
-hello_world()`;
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * codeSnippets.length);
+    setCurrentSnippet(codeSnippets[randomIndex]);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-vision-light dark:bg-vision-dark text-vision-text-light dark:text-vision-text-dark">
@@ -45,7 +69,7 @@ hello_world()`;
           className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto"
         >
           <pre className="text-left font-mono text-green-400 text-lg md:text-xl overflow-x-auto">
-            <TypingEffect text={codeSnippet} speed={50} />
+            <TypingEffect text={currentSnippet} speed={50} />
           </pre>
         </motion.div>
         <motion.div
@@ -56,7 +80,7 @@ hello_world()`;
         >
           <Link
             to="/register"
-            className="px-8 py-4 rounded-full bg-vision-accent text-white text-xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block glowing-button"
+            className="px-10 py-5 rounded-full bg-vision-accent text-white text-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block glowing-button"
           >
             Get Started for Free
           </Link>

@@ -69,5 +69,7 @@ Located at `frontend/src/pages/LoginPage.jsx` and `frontend/src/pages/RegisterPa
 
 *   **Action**: The left panels of the login and registration pages now use CSS gradients and icons instead of images. You can further customize these visual elements by modifying the Tailwind CSS classes or adding more complex CSS for abstract patterns or animations within the `motion.div` elements. The current implementation uses simple rounded shapes with gradients and an emoji icon.
 
+*   **Note**: The previous instruction regarding placeholder graphics/testimonials has been removed as the design now relies on CSS-based visuals.
+
 
 

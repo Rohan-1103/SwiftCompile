@@ -18,6 +18,11 @@ body {
   --color-text: #374151; /* vision-text-light */
   --color-primary: #6366F1; /* vision-primary */
   --color-accent: #EC4899; /* vision-accent */
+
+  /* Light mode gradient colors */
+  --gradient-start-light: #A78BFA; /* light purple */
+  --gradient-mid-light: #FBCFE8; /* light pink */
+  --gradient-end-light: #93C5FD; /* light blue */
 }
 
 [data-theme='dark'] {
@@ -48,9 +53,13 @@ button {
 }
 
 .animated-gradient {
-  background: linear-gradient(-45deg, #6366F1, #8B5CF6, #EC4899, #6366F1);
+  background: linear-gradient(-45deg, var(--gradient-start-dark, #6366F1), var(--gradient-mid-dark, #8B5CF6), var(--gradient-end-dark, #EC4899), var(--gradient-start-dark, #6366F1));
   background-size: 400% 400%;
   animation: gradientAnimation 15s ease infinite;
+}
+
+[data-theme='light'] .animated-gradient {
+  background: linear-gradient(-45deg, var(--gradient-start-light), var(--gradient-mid-light), var(--gradient-end-light), var(--gradient-start-light));
 }
 
 /* For the backdrop-blur effect on the Navbar */

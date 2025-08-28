@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X, Rocket } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-hot-toast';
 
@@ -45,8 +45,8 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full backdrop-blur-nav bg-white/30 dark:bg-vision-dark/50 shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-vision-primary flex items-center">
-          <span className="mr-2">🚀</span> SwiftCompile
+        <Link to="/" className="text-3xl font-bold text-vision-primary flex items-center">
+          <Rocket size={32} className="mr-2" /> SwiftCompile
         </Link>
 
         {/* Desktop Navigation */}
@@ -64,31 +64,17 @@ const Navbar = () => {
               </Link>
             </>
           ) : (
-            <div className="relative">
+            <>
+              <Link to="/dashboard" className="text-vision-text-light dark:text-vision-text-dark hover:text-vision-primary transition-colors">
+                Dashboard
+              </Link>
               <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-vision-primary text-white font-bold focus:outline-none focus:ring-2 focus:ring-vision-primary focus:ring-offset-2"
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
               >
-                {userEmail.charAt(0).toUpperCase()}
+                Logout
               </button>
-              {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-vision-dark rounded-md shadow-lg py-1 z-10">
-                  <Link
-                    to="/dashboard"
-                    className="block px-4 py-2 text-sm text-vision-text-light dark:text-vision-text-dark hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => setIsUserMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+            </>
           )}
           {/* Theme Toggle */}
           <button
