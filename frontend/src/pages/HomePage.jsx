@@ -115,11 +115,25 @@ const HomePage = () => {
     <div className="flex flex-col min-h-screen bg-vision-light dark:bg-vision-dark text-vision-text-light dark:text-vision-text-dark">
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center h-screen text-white animated-gradient p-4 text-center overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 z-20" // Adjusted positioning
+        >
+          <Link
+            to="/register"
+            className="px-10 py-5 rounded-full bg-gradient-to-r from-vision-primary to-vision-secondary text-white text-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block"
+          >
+            Get Started for Free
+          </Link>
+        </motion.div>
+
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl md:text-7xl font-bold mb-6 leading-tight z-10" // Changed to absolute, centered, and added z-index
         >
           Code, Compile, Conquer. Instantly.
         </motion.h1>
@@ -129,7 +143,7 @@ const HomePage = () => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto z-10"
+          className="bg-black bg-opacity-70 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-auto z-10 absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-1/2" // Added absolute positioning and z-index
         >
           <pre className="text-left font-mono text-green-400 text-lg md:text-xl overflow-x-auto">
             <TypingEffect text={codeSnippets[0]} speed={50} />
@@ -140,7 +154,7 @@ const HomePage = () => {
           initial={{ opacity: 0, x: -100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, delay: 1.0 }}
-          className="absolute top-1/4 left-10 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden lg:block"
+          className="absolute top-1/4 left-10 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden lg:block z-10" // Added z-index
         >
           <pre className="text-left font-mono text-blue-300 text-sm">
             <TypingEffect text={codeSnippets[1]} speed={40} />
@@ -151,7 +165,7 @@ const HomePage = () => {
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, delay: 1.5 }}
-          className="absolute bottom-1/4 right-10 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden lg:block"
+          className="absolute bottom-1/4 right-10 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden lg:block z-10" // Added z-index
         >
           <pre className="text-left font-mono text-red-300 text-sm">
             <TypingEffect text={codeSnippets[2]} speed={45} />
@@ -162,7 +176,7 @@ const HomePage = () => {
           initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 2.0 }}
-          className="absolute top-10 right-1/4 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden md:block"
+          className="absolute top-10 right-1/4 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden md:block z-10" // Added z-index
         >
           <pre className="text-left font-mono text-yellow-300 text-xs">
             <TypingEffect text={codeSnippets[3]} speed={35} />
@@ -173,25 +187,11 @@ const HomePage = () => {
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 2.5 }}
-          className="absolute bottom-10 left-1/4 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden md:block"
+          className="absolute bottom-10 left-1/4 bg-black bg-opacity-60 p-4 rounded-lg shadow-lg hidden md:block z-10" // Added z-index
         >
           <pre className="text-left font-mono text-purple-300 text-xs">
             <TypingEffect text={codeSnippets[4]} speed={30} />
           </pre>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-10 z-10"
-        >
-          <Link
-            to="/register"
-            className="px-10 py-5 rounded-full bg-vision-primary text-white text-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block glowing-button"
-          >
-            Get Started for Free
-          </Link>
         </motion.div>
       </section>
 
