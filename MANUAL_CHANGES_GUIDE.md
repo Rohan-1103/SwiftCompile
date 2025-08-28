@@ -63,30 +63,11 @@ Located at `frontend/src/pages/LoginPage.jsx` and `frontend/src/pages/RegisterPa
     *   Redirecting the user to a protected route (e.g., `/dashboard`).
     *   Updating a global authentication state (e.g., using React Context or Redux) to reflect the user's logged-in status.
 
-### 3. Placeholder Graphics/Testimonials
+### 3. Login/Register Page Left Panel Visuals
 
 Located at `frontend/src/pages/LoginPage.jsx` and `frontend/src/pages/RegisterPage.jsx`
 
-*   **Action**: Replace the placeholder `<img>` tags with your desired sleek, abstract graphics or dynamic rotating testimonials to enhance the visual appeal of the login/register pages.
+*   **Action**: The left panels of the login and registration pages now use CSS gradients and icons instead of images. You can further customize these visual elements by modifying the Tailwind CSS classes or adding more complex CSS for abstract patterns or animations within the `motion.div` elements. The current implementation uses simple rounded shapes with gradients and an emoji icon.
 
-### 4. Navbar Authentication State and User Info
 
-Located at `frontend/src/components/Navbar.jsx`
-
-*   **Action**: Replace the dummy authentication state (`isAuthenticated = false`) and user email (`userEmail = "user@example.com"`) with actual values derived from your authentication system (e.g., checking for a stored JWT, fetching user data).
-
-### 5. Navbar Logout Logic
-
-Located at `frontend/src/components/Navbar.jsx`
-
-*   **Action**: Implement the actual logout logic. This typically involves:
-    *   Clearing the stored JWT token.
-    *   Clearing any user-related state.
-    *   Redirecting the user to the login or home page.
-
-### 6. Dashboard Page Link
-
-Located at `frontend/src/components/Navbar.jsx`
-
-*   **Action**: The Navbar includes a link to `/dashboard`. You will need to create the `frontend/src/pages/DashboardPage.jsx` (or similar) file and define its route in `frontend/src/App.jsx` to make this link functional.
 

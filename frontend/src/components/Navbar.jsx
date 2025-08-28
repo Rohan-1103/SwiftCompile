@@ -1,21 +1,44 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Sun, Moon, Menu, X, UserCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { toast } from 'react-hot-toast';
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // Dummy auth state for now
-  const isAuthenticated = false; // MANUAL_CHANGE_REQUIRED: Replace with actual authentication state
-  const userEmail = "user@example.com"; // MANUAL_CHANGE_REQUIRED: Replace with actual user email
+  // Basic authentication state management using localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+  const [userEmail, setUserEmail] = useState(() => {
+    return localStorage.getItem('userEmail') || 'user@example.com';
+  });
+
+  // Effect to update isAuthenticated and userEmail when localStorage changes (e.g., after login/logout)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuthenticated(localStorage.getItem('isLoggedIn') === 'true');
+      setUserEmail(localStorage.getItem('userEmail') || 'user@example.com');
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleLogout = () => {
-    // MANUAL_CHANGE_REQUIRED: Implement actual logout logic
-    console.log("Logging out...");
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userEmail');
+    setIsAuthenticated(false);
+    setUserEmail('user@example.com');
     setIsUserMenuOpen(false);
+    toast.success("Logged out successfully!");
+    navigate('/login'); // Redirect to login page after logout
   };
 
   return (
@@ -51,7 +74,7 @@ const Navbar = () => {
               {isUserMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-vision-dark rounded-md shadow-lg py-1 z-10">
                   <Link
-                    to="/dashboard" // MANUAL_CHANGE_REQUIRED: Create Dashboard page
+                    to="/dashboard"
                     className="block px-4 py-2 text-sm text-vision-text-light dark:text-vision-text-dark hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
@@ -112,7 +135,7 @@ const Navbar = () => {
             ) : (
               <>
                 <Link
-                  to="/dashboard" // MANUAL_CHANGE_REQUIRED: Create Dashboard page
+                  to="/dashboard"
                   className="text-vision-text-light dark:text-vision-text-dark hover:text-vision-primary transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

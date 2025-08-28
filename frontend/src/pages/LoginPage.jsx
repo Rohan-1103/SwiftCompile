@@ -36,8 +36,10 @@ const LoginPage = () => {
         <div className="text-center">
           <h2 className="text-4xl font-bold mb-4">Unlock Your Coding Potential</h2>
           <p className="text-lg">Join a community of developers and bring your ideas to life.</p>
-          {/* MANUAL_CHANGE_REQUIRED: Add a sleek, abstract graphic or rotating testimonial here */}
-          <img src="https://via.placeholder.com/400x300?text=Abstract+Graphic" alt="Abstract Graphic" className="mt-8 mx-auto rounded-lg shadow-lg" />
+          {/* Replaced image with a dynamic, abstract background using CSS gradients */}
+          <div className="w-64 h-64 bg-gradient-to-br from-vision-accent to-vision-secondary rounded-full flex items-center justify-center text-white text-6xl font-bold shadow-lg">
+            🚀
+          </div>
         </div>
       </motion.div>
 
