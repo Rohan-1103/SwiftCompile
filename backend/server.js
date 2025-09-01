@@ -5,6 +5,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
+const projectRoutes = require('./routes/project.routes');
+const fileRoutes = require('./routes/file.routes');
 
 // Initialize the Express application
 const app = express();
@@ -20,6 +22,10 @@ app.use(express.json());
 // Routes
 // Mount authentication routes under the /api/auth path
 app.use('/api/auth', authRoutes);
+// Mount project routes under the /api/projects path
+app.use('/api/projects', projectRoutes);
+// Mount file routes under the /api/projects/:projectId/files path
+projectRoutes.use('/:projectId/files', fileRoutes);
 
 // Define the port to listen on, defaulting to 3000 if not specified in environment variables
 // MANUAL_CHANGE_REQUIRED: Ensure this port is open and accessible in your deployment environment.

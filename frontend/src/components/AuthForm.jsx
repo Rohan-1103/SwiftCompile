@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
+// AUTHENTICATION FORM COMPONENT FOR LOGIN AND REGISTRATION
 const AuthForm = ({ type, onSubmit, isLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // HANDLES FORM SUBMISSION
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // VALIDATE PASSWORDS FOR REGISTRATION
     if (type === 'register' && password !== confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
 
+    // CALL ONSUBMIT PROP WITH EMAIL AND PASSWORD
     await onSubmit({ email, password });
   };
 
   return (
-    <motion.form
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+    <form
       onSubmit={handleSubmit}
       className="w-full max-w-md bg-white dark:bg-vision-dark p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
     >
@@ -112,7 +112,7 @@ const AuthForm = ({ type, onSubmit, isLoading }) => {
           </button>
         </div>
       </div>
-    </motion.form>
+    </form>
   );
 };
 
