@@ -21,7 +21,7 @@ const verifyToken = (req, res, next) => {
     }
 
     // IF VERIFICATION IS SUCCESSFUL, SAVE THE DECODED USER ID TO THE REQUEST OBJECT
-    req.user = { id: decoded.id };
+    req.user = { id: decoded.user.id };
     next();
   });
 };
