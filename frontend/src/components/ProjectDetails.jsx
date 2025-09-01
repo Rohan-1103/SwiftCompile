@@ -35,7 +35,7 @@ const ProjectDetails = ({ project }) => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.put(
-        `http://localhost:3000/api/files/${fileId}`,
+        `http://localhost:3000/api/projects/${project.id}/files/${fileId}`,
         { content: fileContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -52,7 +52,7 @@ const ProjectDetails = ({ project }) => {
   const handleDeleteFile = async (fileId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/files/${fileId}`, {
+      await axios.delete(`http://localhost:3000/api/projects/${project.id}/files/${fileId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFiles(files.filter((file) => file.id !== fileId));
