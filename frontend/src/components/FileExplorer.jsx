@@ -4,6 +4,7 @@ import { File, Folder, FilePlus, FolderPlus } from "lucide-react";
 
 const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
     const [treeData, setTreeData] = useState([]);
+    const [treeKey, setTreeKey] = useState(0);
     const [selectedNode, setSelectedNode] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,6 +31,8 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
             const data = await response.json();
             console.log('Fetched raw data:', data); // DEBUG LOG
             setTreeData(buildTree(data));
+            setTreeKey(prevKey => prevKey + 1); // Increment key to force Tree re-render
+            setSelectedNode(null); // Reset selectedNode when treeData changes
         } catch (err) {
             console.error('Error fetching files:', err);
             setError('Failed to load files.');
@@ -64,11 +67,21 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
                 return; // Skip invalid items
             }
             if (item.parent_id && nodes[item.parent_id]) {
-                console.log('Building tree - adding child to parent:', item.id, '->', item.parent_id); // DEBUG LOG
-                nodes[item.parent_id].children.push(nodes[item.id]);
+                // Ensure nodes[item.id] is valid before pushing
+                if (nodes[item.id]) { // Add this check
+                    console.log('Building tree - adding child to parent:', item.id, '->', item.parent_id); // DEBUG LOG
+                    nodes[item.parent_id].children.push(nodes[item.id]);
+                } else {
+                    console.error('Attempted to add undefined child to parent:', item); // DEBUG LOG
+                }
             } else {
-                console.log('Building tree - adding to root:', item.id); // DEBUG LOG
-                tree.push(nodes[item.id]);
+                // Ensure nodes[item.id] is valid before pushing
+                if (nodes[item.id]) { // Add this check
+                    console.log('Building tree - adding to root:', item.id); // DEBUG LOG
+                    tree.push(nodes[item.id]);
+                } else {
+                    console.error('Attempted to add undefined item to root:', item); // DEBUG LOG
+                }
             }
         });
         console.log('Final tree data:', tree); // DEBUG LOG
@@ -225,10 +238,10 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
                     <button onClick={handleCreateFolder} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><FolderPlus className="w-4 h-4" /></button>
                  </div>
             </div>
-            {loading && <p>Loading files...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-            {!loading && !error && (
+            {loading && !error && (
+                console.log('Rendering Tree with treeData:', treeData),
                 <Tree
+                    key={treeKey}
                     initialData={treeData}
                     width="100%"
                     height={1000} // Adjust height as needed
@@ -236,7 +249,10 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
                     rowHeight={30}
                     disableDrag={true}
                     disableDrop={true}
-                    onSelect={(nodes) => setSelectedNode(nodes[0] || null)}
+                    onSelect={(nodes) => {
+                        console.log('onSelect nodes:', nodes); // DEBUG LOG
+                        setSelectedNode(nodes[0] || null);
+                    }}
                 >
                     {Node}
                 </Tree>
