@@ -47,7 +47,8 @@ const executeCode = async (req, res) => {
             return res.status(500).json({ success: false, stderr: 'Docker is not running.' });
         }
 
-        container = await docker.createContainer({
+        try {
+            container = await docker.createContainer({
             Image: image,
             Cmd: command(tempFilePath),
             HostConfig: {
