@@ -10,6 +10,11 @@ export default defineConfig({
       languageWorkers: ['editorWorkerService', 'css', 'html', 'json', 'typescript']
     })
   ],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
   resolve: {
     alias: {
       '@': '/src'

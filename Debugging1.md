@@ -1,3 +1,12 @@
+# Manual Changes Required: Database Schema Update
+
+This guide outlines the manual changes required for the database schema.
+
+## Database (`init.sql`) Schema Update
+
+To apply the necessary schema changes, you must manually execute the following SQL script against your PostgreSQL database:
+
+```sql
 -- MANUAL_CHANGE_REQUIRED: Execute this script manually against your PostgreSQL database.
 -- This script creates the 'users' table if it does not already exist.
 -- Ensure your database is properly configured and accessible before running this.
@@ -29,3 +38,8 @@ CREATE TABLE IF NOT EXISTS files (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+```
+
+## `user_projects` Directory
+
+A new directory named `user_projects` will be created in the root of the project directory. This directory will store the files and folders for each project.

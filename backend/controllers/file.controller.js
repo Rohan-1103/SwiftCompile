@@ -1,4 +1,6 @@
 const db = require('../db/db');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * CREATES A NEW FILE WITHIN A SPECIFIC PROJECT.
@@ -7,7 +9,7 @@ const db = require('../db/db');
  */
 exports.createFile = async (req, res) => {
   const { projectId } = req.params;
-  const { name, content } = req.body;
+  const { name, content, parentId } = req.body;
   const userId = req.user.id; // ASSUMING VERIFYTOKEN MIDDLEWARE
 
   if (!name) {
@@ -21,10 +23,28 @@ exports.createFile = async (req, res) => {
       return res.status(404).json({ message: 'Project not found or access denied.' });
     }
 
+    const projectPath = path.join(__dirname, '..', '..', 'user_projects', projectId);
+    if (!fs.existsSync(projectPath)) {
+      fs.mkdirSync(projectPath, { recursive: true });
+    }
+
+    let newPath = path.join(projectPath, name);
+    if (parentId) {
+        const parentResult = await db.query('SELECT path FROM files WHERE id = $1 AND project_id = $2', [parentId, projectId]);
+        if (parentResult.rows.length > 0) {
+            const parentPath = parentResult.rows[0].path;
+            newPath = path.join(projectPath, parentPath, name);
+        }
+    }
+
+    fs.writeFileSync(newPath, content || '');
+
+    const relativePath = path.relative(projectPath, newPath);
+
     // INSERT THE NEW FILE
     const result = await db.query(
-      'INSERT INTO files (project_id, name, content) VALUES ($1, $2, $3) RETURNING *',
-      [projectId, name, content || '']
+      'INSERT INTO files (project_id, name, content, path, parent_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [projectId, name, content || '', relativePath, parentId]
     );
 
     res.status(201).json(result.rows[0]);
@@ -62,6 +82,11 @@ exports.updateFile = async (req, res) => {
       return res.status(404).json({ message: 'File not found or access denied.' });
     }
 
+    const projectPath = path.join(__dirname, '..', '..', 'user_projects', result.rows[0].project_id.toString());
+    const filePath = path.join(projectPath, result.rows[0].path);
+
+    fs.writeFileSync(filePath, content);
+
     res.status(200).json(result.rows[0]);
   } catch (error) {
     console.error('Error updating file:', error);
@@ -84,12 +109,19 @@ exports.deleteFile = async (req, res) => {
       `DELETE FROM files f
        USING projects p
        WHERE f.id = $1 AND f.project_id = p.id AND p.user_id = $2
-       RETURNING f.id`,
+       RETURNING f.id, f.path, f.project_id`,
       [fileId, userId]
     );
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'File not found or access denied.' });
+    }
+
+    const projectPath = path.join(__dirname, '..', '..', 'user_projects', result.rows[0].project_id.toString());
+    const filePath = path.join(projectPath, result.rows[0].path);
+
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
     }
 
     res.status(200).json({ message: 'File deleted successfully.' });
