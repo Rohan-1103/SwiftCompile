@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -77,4 +79,8 @@ button {
 .input-focus-highlight:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+}
+
+.font-mono {
+    font-family: 'Fira Code', monospace;
 }

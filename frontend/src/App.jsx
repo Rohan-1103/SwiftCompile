@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Navbar from './components/Navbar';
 import DashboardPage from './pages/DashboardPage';
+import EditorPage from './pages/EditorPage'; // IMPORT THE NEW EDITOR PAGE
 
 function App() {
   const location = useLocation();
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/editor/:projectId" element={<EditorPage />} /> {/* ADD THE EDITOR ROUTE */}
           {/* Add protected routes here later */}
         </Routes>
       </AnimatePresence>
