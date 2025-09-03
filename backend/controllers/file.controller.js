@@ -55,6 +55,30 @@ exports.createFile = async (req, res) => {
 };
 
 /**
+ * RETRIEVES ALL FILES FOR A SPECIFIC PROJECT.
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ */
+exports.getFiles = async (req, res) => {
+  const { projectId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // VERIFY THAT THE PROJECT EXISTS AND BELONGS TO THE USER
+    const projectCheck = await db.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [projectId, userId]);
+    if (projectCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'Project not found or access denied.' });
+    }
+
+    const files = await db.query('SELECT * FROM files WHERE project_id = $1 ORDER BY name', [projectId]);
+    res.status(200).json(files.rows);
+  } catch (error) {
+    console.error('Error retrieving files:', error);
+    res.status(500).json({ message: 'Failed to retrieve files.' });
+  }
+};
+
+/**
  * UPDATES THE CONTENT OF A SPECIFIC FILE.
  * @param {object} req - The request object.
  * @param {object} res - The response object.

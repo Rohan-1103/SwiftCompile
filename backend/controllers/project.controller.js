@@ -53,8 +53,8 @@ exports.createProject = async (req, res) => {
 
     for (const file of template) {
       const fileResult = await client.query(
-        'INSERT INTO files (project_id, name, content) VALUES ($1, $2, $3) RETURNING *',
-        [newProject.id, file.name, file.content]
+        'INSERT INTO files (project_id, name, content, path) VALUES ($1, $2, $3, $4) RETURNING *',
+        [newProject.id, file.name, file.content, file.name]
       );
       files.push(fileResult.rows[0]);
     }

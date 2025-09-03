@@ -4,25 +4,65 @@ import { Tree } from "react-arborist";
 import { File, Folder, FilePlus, FolderPlus } from "lucide-react";
 
 // MOCK DATA - REPLACE WITH API CALL
-const initialData = [
-    { id: "1", name: "src", children: [
-        { id: "c1", name: "App.jsx" },
-        { id: "c2", name: "index.css" },
-    ]},
-    { id: "2", name: "public", children: [
-        { id: "c3", name: "vite.svg" },
-    ]},
-    { id: "3", name: "package.json" },
-];
-
 const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
-    const [treeData, setTreeData] = useState(initialData);
+    const [treeData, setTreeData] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // In a real app, you'd fetch this data
+    const fetchFiles = async () => {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setError('Authentication required. Please log in.');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/projects/${projectId}/files`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch files');
+            }
+            const data = await response.json();
+            setTreeData(buildTree(data));
+        } catch (err) {
+            console.error('Error fetching files:', err);
+            setError('Failed to load files.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        // fetch(`/api/projects/${projectId}/files`).then(res => res.json()).then(data => setTreeData(data));
+        if (projectId) {
+            fetchFiles();
+        }
     }, [projectId]);
+
+    // Helper function to build a tree structure from a flat list of files/folders
+    const buildTree = (flatList) => {
+        const nodes = {};
+        const tree = [];
+
+        flatList.forEach(item => {
+            nodes[item.id] = { ...item, children: [] };
+        });
+
+        flatList.forEach(item => {
+            if (item.parent_id && nodes[item.parent_id]) {
+                nodes[item.parent_id].children.push(nodes[item.id]);
+            } else {
+                tree.push(nodes[item.id]);
+            }
+        });
+        return tree;
+    };
 
     const getDefaultContent = (fileName) => {
         const extension = fileName.split('.').pop();

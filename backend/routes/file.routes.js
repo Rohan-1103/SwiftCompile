@@ -6,6 +6,9 @@ const verifyToken = require('../middleware/auth.middleware');
 // ALL FILE ROUTES ARE PROTECTED
 router.use(verifyToken);
 
+// GET /api/projects/:projectId/files - GET ALL FILES FOR A PROJECT
+router.get('/', fileController.getFiles);
+
 // POST /api/projects/:projectId/files - CREATE A NEW FILE IN A PROJECT
 router.post('/', fileController.createFile);
 

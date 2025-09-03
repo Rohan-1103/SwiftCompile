@@ -4,32 +4,88 @@ import { Plus, Search } from 'lucide-react';
 import ProjectCard from '../components/ProjectCard';
 import SkeletonCard from '../components/SkeletonCard';
 
-// MOCK DATA - REPLACE WITH API CALL
-const mockProjects = [
-    { id: 1, name: 'SwiftCompiler', language: 'javascript', description: 'A web-based Swift compiler using Monaco editor.', updatedAt: '2025-09-03T10:00:00Z' },
-    { id: 2, name: 'DataViz Dashboard', language: 'python', description: 'Dashboard for visualizing sales data with charts.', updatedAt: '2025-09-02T14:30:00Z' },
-    { id: 3, name: 'My Portfolio', language: 'javascript', description: 'Personal portfolio website built with React.', updatedAt: '2025-08-28T18:00:00Z' },
-];
-
 const DashboardPage = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newProjectName, setNewProjectName] = useState('');
+    const [newProjectLanguage, setNewProjectLanguage] = useState('javascript'); // Default language
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Simulate API call
-        setTimeout(() => {
-            setProjects(mockProjects);
-            setLoading(false);
-        }, 1500);
+        const fetchProjects = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Authentication required. Please log in.');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch projects');
+                }
+                const data = await response.json();
+                setProjects(data);
+            } catch (err) {
+                console.error('Error fetching projects:', err);
+                setError('Failed to load projects. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
     }, []);
 
     const handleNewProject = () => {
-        // Navigate to a new project page or open a modal
-        console.log('Creating new project...');
-        // For now, let's navigate to a placeholder editor page
-        const newProjectId = Math.max(...projects.map(p => p.id), 0) + 1;
-        navigate(`/editor/${newProjectId}`);
+        setShowCreateModal(true);
+    };
+
+    const handleCreateProjectSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setError('Authentication required. Please log in.');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name: newProjectName, language: newProjectLanguage })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create project');
+            }
+
+            const newProject = await response.json();
+            setProjects(prevProjects => [newProject, ...prevProjects]);
+            setNewProjectName('');
+            setNewProjectLanguage('javascript');
+            setShowCreateModal(false);
+            navigate(`/editor/${newProject.id}`); // Navigate to the new project's editor page
+        } catch (err) {
+            console.error('Error creating project:', err);
+            setError('Failed to create project. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleOpenProject = (projectId) => {
@@ -56,6 +112,8 @@ const DashboardPage = () => {
                 </div>
             </header>
 
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
+
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
@@ -78,6 +136,55 @@ const DashboardPage = () => {
                             onDelete={handleDeleteProject}
                         />
                     ))}
+                </div>
+            )}
+
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-96">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Create New Project</h3>
+                        <form onSubmit={handleCreateProjectSubmit}>
+                            <div className="mb-4">
+                                <label htmlFor="projectName" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Project Name:</label>
+                                <input
+                                    type="text"
+                                    id="projectName"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                                    value={newProjectName}
+                                    onChange={(e) => setNewProjectName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="projectLanguage" className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Language:</label>
+                                <select
+                                    id="projectLanguage"
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                                    value={newProjectLanguage}
+                                    onChange={(e) => setNewProjectLanguage(e.target.value)}
+                                >
+                                    <option value="javascript">JavaScript</option>
+                                    <option value="python">Python</option>
+                                    <option value="web">Web (HTML/CSS/JS)</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <button
+                                    type="submit"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                >
+                                    Create Project
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>
