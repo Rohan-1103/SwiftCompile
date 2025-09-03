@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Allotment } from "allotment";
+import "allotment/dist/style.css";
 import { Play, Save, GitCommit, ChevronRight, Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 
@@ -112,27 +113,25 @@ Execution finished.`);
                 </div>
             </header>
 
-            <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-3rem)]">
-                <ResizablePanel defaultSize={20} minSize={15}>
-                    <FileExplorer projectId={projectId} onFileSelect={handleFileSelect} activeFile={activeFile} />
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={80}>
-                    <ResizablePanelGroup direction="vertical">
-                        <ResizablePanel defaultSize={70} minSize={30}>
-                            <Editor
-                                file={activeFile}
-                                content={fileContent}
-                                onChange={handleCodeChange}
-                            />
-                        </ResizablePanel>
-                        <ResizableHandle withHandle />
-                        <ResizablePanel defaultSize={30} minSize={15}>
-                            <Terminal output={output} />
-                        </ResizablePanel>
-                    </ResizablePanelGroup>
-                </ResizablePanel>
-            </ResizablePanelGroup>
+                        <Allotment defaultSizes={[200, 800]}>
+              <Allotment.Pane minSize={150}>
+                <FileExplorer projectId={projectId} onFileSelect={handleFileSelect} activeFile={activeFile} />
+              </Allotment.Pane>
+              <Allotment.Pane>
+                <Allotment vertical>
+                  <Allotment.Pane minSize={300}>
+                    <Editor
+                      file={activeFile}
+                      content={fileContent}
+                      onChange={handleCodeChange}
+                    />
+                  </Allotment.Pane>
+                  <Allotment.Pane minSize={150}>
+                    <Terminal output={output} />
+                  </Allotment.Pane>
+                </Allotment>
+              </Allotment.Pane>
+            </Allotment>
         </div>
     );
 };

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Tree, NodeRendererProps } from "react-arborist";
+import { Tree } from "react-arborist";
 import { File, Folder, FilePlus, FolderPlus, Edit, Trash2 } from "lucide-react";
 
 // MOCK DATA - REPLACE WITH API CALL
