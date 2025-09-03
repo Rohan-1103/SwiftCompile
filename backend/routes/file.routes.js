@@ -12,6 +12,9 @@ router.get('/', fileController.getFiles);
 // POST /api/projects/:projectId/files - CREATE A NEW FILE IN A PROJECT
 router.post('/', fileController.createFile);
 
+// POST /api/projects/:projectId/files/folder - CREATE A NEW FOLDER IN A PROJECT
+router.post('/folder', fileController.createFolder);
+
 // PUT /api/files/:fileId - UPDATE A FILE
 router.put('/:fileId', fileController.updateFile);
 

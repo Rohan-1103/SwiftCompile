@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Tree } from "react-arborist";
 import { File, Folder, FilePlus, FolderPlus } from "lucide-react";
 
-// MOCK DATA - REPLACE WITH API CALL
 const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
     const [treeData, setTreeData] = useState([]);
     const [selectedNode, setSelectedNode] = useState(null);
@@ -30,6 +28,7 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
                 throw new Error('Failed to fetch files');
             }
             const data = await response.json();
+            console.log('Fetched raw data:', data); // DEBUG LOG
             setTreeData(buildTree(data));
         } catch (err) {
             console.error('Error fetching files:', err);
@@ -51,16 +50,28 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
         const tree = [];
 
         flatList.forEach(item => {
-            nodes[item.id] = { ...item, children: [] };
+            console.log('Building tree - processing item:', item); // DEBUG LOG
+            if (!item || item.id === undefined) {
+                console.error('Invalid item found in flatList:', item); // DEBUG LOG
+                return; // Skip invalid items
+            }
+            // Initialize children only if it's a folder
+            nodes[item.id] = { ...item, ...(item.is_folder && { children: [] }) };
         });
 
         flatList.forEach(item => {
+            if (!item || item.id === undefined) {
+                return; // Skip invalid items
+            }
             if (item.parent_id && nodes[item.parent_id]) {
+                console.log('Building tree - adding child to parent:', item.id, '->', item.parent_id); // DEBUG LOG
                 nodes[item.parent_id].children.push(nodes[item.id]);
             } else {
+                console.log('Building tree - adding to root:', item.id); // DEBUG LOG
                 tree.push(nodes[item.id]);
             }
         });
+        console.log('Final tree data:', tree); // DEBUG LOG
         return tree;
     };
 
@@ -70,9 +81,21 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
             case 'js':
                 return 'console.log("Hello, World!");';
             case 'html':
-                return '<!DOCTYPE html>\n<html>\n<head>\n  <title>New Page</title>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>';
+                return `<!DOCTYPE html>
+<html>
+<head>
+  <title>New Page</title>
+</head>
+<body>
+  <h1>Hello, World!</h1>
+</body>
+</html>`;
             case 'css':
-                return 'body {\n  font-family: sans-serif;\n}';
+                return `body {
+  font-family: sans-serif;
+}`;
+            case 'py':
+                return '# Your Python code here';
             default:
                 return '';
         }
@@ -90,17 +113,17 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
 
         let parentId = null;
         if (selectedNode) {
-            if (selectedNode.children) {
-                parentId = selectedNode.id;
-            } else {
-                parentId = selectedNode.parent.id;
+            if (selectedNode.data.children) { // If selected node is a folder
+                parentId = selectedNode.data.id;
+            } else if (selectedNode.parent) { // If selected node is a file, use its parent
+                parentId = selectedNode.parent.data.id;
             }
         }
 
         const newFile = {
             name: fileName,
             content: getDefaultContent(fileName),
-            parentId: parentId
+            parent_id: parentId // Use parent_id to match backend
         };
 
         try {
@@ -117,18 +140,8 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
                 throw new Error('Failed to create file');
             }
 
-            const createdFile = await response.json();
-
-            // Update tree data
-            const newTreeData = [...treeData];
-            const parentNode = findNode(newTreeData, parentId);
-
-            if (parentNode) {
-                parentNode.children = parentNode.children ? [...parentNode.children, createdFile] : [createdFile];
-            } else {
-                newTreeData.push(createdFile);
-            }
-            setTreeData(newTreeData);
+            // Re-fetch files to update the tree after successful creation
+            fetchFiles();
 
         } catch (error) {
             console.error("Error creating file:", error);
@@ -136,19 +149,56 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
         }
     };
 
-    const findNode = (nodes, id) => {
-        for (const node of nodes) {
-            if (node.id === id) return node;
-            if (node.children) {
-                const found = findNode(node.children, id);
-                if (found) return found;
+    const handleCreateFolder = async () => {
+        const folderName = prompt("Enter folder name:");
+        if (!folderName) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("You must be logged in to create a folder.");
+            return;
+        }
+
+        let parentId = null;
+        if (selectedNode) {
+            if (selectedNode.data.children) { // If selected node is a folder
+                parentId = selectedNode.data.id;
+            } else if (selectedNode.parent) { // If selected node is a file, use its parent
+                parentId = selectedNode.parent.data.id;
             }
         }
-        return null;
+
+        const newFolder = {
+            name: folderName,
+            is_folder: true, // Indicate that this is a folder
+            parent_id: parentId
+        };
+
+        try {
+            const response = await fetch(`/api/projects/${projectId}/files/folder`, { // Using the new folder endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(newFolder)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create folder');
+            }
+
+            // Re-fetch files to update the tree after successful creation
+            fetchFiles();
+
+        } catch (error) {
+            console.error("Error creating folder:", error);
+            alert("Error creating folder.");
+        }
     };
 
     const Node = ({ node, style, dragHandle }) => {
-        const isFolder = !!node.children;
+        const isFolder = node.data.is_folder; // Use node.data.is_folder directly
         const Icon = isFolder ? Folder : File;
 
         return (
@@ -172,21 +222,25 @@ const FileExplorer = ({ projectId, onFileSelect, activeFile }) => {
                  <h4 className="font-bold text-sm">File Explorer</h4>
                  <div className="flex gap-2">
                     <button onClick={handleCreateFile} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><FilePlus className="w-4 h-4" /></button>
-                    <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><FolderPlus className="w-4 h-4" /></button>
+                    <button onClick={handleCreateFolder} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><FolderPlus className="w-4 h-4" /></button>
                  </div>
             </div>
-            <Tree
-                initialData={treeData}
-                width="100%"
-                height={1000} // Adjust height as needed
-                indent={20}
-                rowHeight={30}
-                disableDrag={true}
-                disableDrop={true}
-                onSelect={(nodes) => setSelectedNode(nodes[0] || null)}
-            >
-                {Node}
-            </Tree>
+            {loading && <p>Loading files...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading && !error && (
+                <Tree
+                    initialData={treeData}
+                    width="100%"
+                    height={1000} // Adjust height as needed
+                    indent={20}
+                    rowHeight={30}
+                    disableDrag={true}
+                    disableDrop={true}
+                    onSelect={(nodes) => setSelectedNode(nodes[0] || null)}
+                >
+                    {Node}
+                </Tree>
+            )}
         </div>
     );
 };
