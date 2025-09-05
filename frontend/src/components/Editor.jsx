@@ -44,6 +44,9 @@ const Editor = ({ file, content, onChange }) => {
 };
 
 function getLanguageFromFile(filename) {
+    if (!filename) {
+        return 'plaintext'; // Default language if filename is not provided
+    }
     const extension = filename.split('.').pop();
     switch (extension) {
         case 'js':

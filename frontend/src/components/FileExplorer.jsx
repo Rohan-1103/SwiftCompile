@@ -54,7 +54,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
         const nodes = {};
         // First, create a node for each item in the list
         flatList.forEach(item => {
-            nodes[item.id] = { ...item, children: item.is_folder ? [] : undefined };
+            nodes[item.id] = { id: String(item.id), data: item, children: item.is_folder ? [] : undefined };
         });
 
         const tree = [];
@@ -150,7 +150,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
         };
 
         try {
-            const response = await fetch(`/api/projects/${projectId}/files/folder`, { // Using the new folder endpoint
+            const response = await fetch(`/api/projects/${projectId}/files/folder`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -173,8 +173,16 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
     };
 
     const Node = ({ node, style, dragHandle }) => {
-        const isFolder = node.data.is_folder; // Use node.data.is_folder directly
-        const Icon = isFolder ? Folder : File;
+        console.log('Node component rendering. node:', node);
+        console.log('Node component rendering. node.data:', node.data);
+
+        // Access node.data.data to get the original item
+        const { name, is_folder } = node.data.data || {}; // Corrected destructuring
+
+        console.log('Node component rendering. name (destructured):', name);
+        console.log('Node component rendering. is_folder (destructured):', is_folder);
+
+        const Icon = is_folder ? Folder : File;
 
         return (
             <div
@@ -182,11 +190,12 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
                 style={style}
                 className={`flex items-center gap-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md px-2 ${node.isSelected ? 'bg-blue-500/20' : ''}`}
                 onClick={() => {
-                    if (!isFolder) onFileSelect(node.data)
+                    // Also pass node.data.data to onFileSelect
+                    if (!is_folder) onFileSelect(node.data.data)
                 }}
             >
-                <Icon className={`w-4 h-4 ${isFolder ? 'text-blue-400' : 'text-gray-400'}`} />
-                <span>{node.data.name}</span>
+                <Icon className={`w-4 h-4 ${is_folder ? 'text-blue-400' : 'text-gray-400'}`} />
+                <span>{name}</span>
             </div>
         );
     };

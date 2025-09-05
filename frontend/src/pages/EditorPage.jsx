@@ -52,9 +52,10 @@ const EditorPage = () => {
     }, [projectId]);
 
     const handleFileSelect = (file) => {
-        // In a real app, fetch file content from API
+        console.log('handleFileSelect called. file:', file);
+        console.log('handleFileSelect called. file.name:', file.name);
         setActiveFile(file);
-        setFileContent(`// Content for ${file.name}`);
+        setFileContent(file.content || ''); // Use file.content if available, otherwise an empty string
         setHasUnsavedChanges(false);
     };
 
