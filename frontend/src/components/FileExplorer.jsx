@@ -10,6 +10,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
     const [error, setError] = useState(null);
 
     const fetchFiles = useCallback(async () => {
+        console.log('fetchFiles called');
         setLoading(true);
         setError(null);
         const token = localStorage.getItem('token');
@@ -29,7 +30,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
                 throw new Error('Failed to fetch files');
             }
             const data = await response.json();
-            console.log('Fetched raw data:', data); // DEBUG LOG
+            console.log('Fetched data for buildTree:', data);
             setTreeData(buildTree(data));
             setTreeKey(prevKey => prevKey + 1); // Increment key to force Tree re-render
             setSelectedNode(null); // Reset selectedNode when treeData changes
@@ -49,6 +50,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
 
     // Helper function to build a tree structure from a flat list of files/folders
     const buildTree = (flatList) => {
+        console.log('buildTree received flatList:', flatList);
         const nodes = {};
         // First, create a node for each item in the list
         flatList.forEach(item => {
@@ -64,7 +66,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
                 tree.push(nodes[item.id]);
             }
         });
-
+        console.log('buildTree returned tree:', tree);
         return tree;
     };
 
@@ -198,7 +200,9 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
                     <button onClick={handleCreateFolder} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><FolderPlus className="w-4 h-4" /></button>
                  </div>
             </div>
-            {loading && !error && (
+            {loading && <p>Loading files...</p>}
+            {error && <p className="text-red-500">{error}</p>}
+            {!loading && !error && treeData.length > 0 && (
                 console.log('Rendering Tree with treeData:', treeData),
                 <Tree
                     key={treeKey}
@@ -216,6 +220,9 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
                 >
                     {Node}
                 </Tree>
+            )}
+            {!loading && !error && treeData.length === 0 && (
+                <p>No files found for this project.</p>
             )}
         </div>
     );

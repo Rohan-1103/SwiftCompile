@@ -20,10 +20,35 @@ const EditorPage = () => {
     const [output, setOutput] = useState('');
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-    // Mock project data fetching
     useEffect(() => {
-        // In a real app, you would fetch this from your API
-        setProject({ id: projectId, name: `Project ${projectId}` });
+        const fetchProject = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // Handle case where user is not authenticated
+                toast.error('Authentication token not found. Please log in.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/projects/${projectId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch project details.');
+                }
+                const data = await response.json();
+                setProject(data);
+            } catch (error) {
+                console.error('Error fetching project:', error);
+                toast.error(error.message);
+            }
+        };
+
+        if (projectId) {
+            fetchProject();
+        }
     }, [projectId]);
 
     const handleFileSelect = (file) => {
