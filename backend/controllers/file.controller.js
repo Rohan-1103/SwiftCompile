@@ -117,23 +117,52 @@ exports.createFolder = async (req, res) => {
  * @param {object} res - The response object.
  */
 exports.getFiles = async (req, res) => {
-  const { projectId } = req.params;
-  const userId = req.user.id;
+    const { projectId } = req.params;
+    const userId = req.user.id;
 
-  try {
-    // VERIFY THAT THE PROJECT EXISTS AND BELONGS TO THE USER
-    const projectCheck = await db.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [projectId, userId]);
-    if (projectCheck.rows.length === 0) {
-      return res.status(404).json({ message: 'Project not found or access denied.' });
+    try {
+        // VERIFY THAT THE PROJECT EXISTS AND BELONGS TO THE USER
+        const projectCheck = await db.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [projectId, userId]);
+        if (projectCheck.rows.length === 0) {
+            return res.status(404).json({ message: 'Project not found or access denied.' });
+        }
+
+        const projectPath = path.join(__dirname, '..', '..', 'user_projects', projectId.toString());
+
+        // Recursive function to scan directories
+        const scanDir = (dirPath, parentId = null) => {
+            const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+            const files = [];
+
+            for (const entry of entries) {
+                const entryPath = path.join(dirPath, entry.name);
+                const relativePath = path.relative(projectPath, entryPath);
+                const isDirectory = entry.isDirectory();
+
+                const fileData = {
+                    id: relativePath, // Use relative path as a unique ID
+                    name: entry.name,
+                    path: relativePath,
+                    is_folder: isDirectory,
+                    parent_id: parentId,
+                    children: isDirectory ? scanDir(entryPath, relativePath) : []
+                };
+                files.push(fileData);
+            }
+            return files;
+        };
+
+        const fileTree = scanDir(projectPath);
+        res.status(200).json(fileTree);
+
+    } catch (error) {
+        console.error('Error retrieving files:', error);
+        if (error.code === 'ENOENT') {
+            return res.status(200).json([]); // No directory, return empty array
+        } else {
+            res.status(500).json({ message: 'Failed to retrieve files.' });
+        }
     }
-
-    // SELECT is_folder column
-    const files = await db.query('SELECT id, project_id, name, path, content, parent_id, created_at, updated_at, is_folder FROM files WHERE project_id = $1 ORDER BY name', [projectId]);
-    res.status(200).json(files.rows);
-  } catch (error) {
-    console.error('Error retrieving files:', error);
-    res.status(500).json({ message: 'Failed to retrieve files.' });
-  }
 };
 
 /**

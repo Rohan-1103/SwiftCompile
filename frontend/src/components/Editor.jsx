@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import MonacoEditor from "@monaco-editor/react";
 import { useTheme } from '../hooks/useTheme'; // Assuming you have a theme hook
 
@@ -7,7 +7,7 @@ const Editor = ({ file, content, onChange }) => {
     const { theme } = useTheme();
     const editorRef = useRef(null);
 
-    const handleEditorDidMount = (editor, monaco) => {
+    const handleEditorDidMount = (editor) => {
         editorRef.current = editor;
         // You can add custom keybindings here if needed
     };

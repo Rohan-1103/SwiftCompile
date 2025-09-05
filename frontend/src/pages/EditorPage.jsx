@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
@@ -40,12 +40,12 @@ const EditorPage = () => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = useCallback(() => {
         // In a real app, save the file content via API
         console.log('Saving file:', activeFile.name, fileContent);
         setHasUnsavedChanges(false);
         toast.success('File Saved!');
-    };
+    }, [activeFile, fileContent]);
 
     const handleRun = async () => {
         setIsRunning(true);
