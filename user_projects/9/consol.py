@@ -1,0 +1,1 @@
+print("This is in consol.py file")

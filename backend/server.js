@@ -27,7 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 // Mount file routes under the /api/projects/:projectId/files path
 projectRoutes.use('/:projectId/files', fileRoutes);
-app.use('/api', codeRoutes);
+app.use('/api/code', codeRoutes);
 
 // Define the port to listen on, defaulting to 3000 if not specified in environment variables
 // MANUAL_CHANGE_REQUIRED: Ensure this port is open and accessible in your deployment environment.

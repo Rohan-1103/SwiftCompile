@@ -66,23 +66,119 @@ const EditorPage = () => {
         }
     };
 
-    const handleSave = useCallback(() => {
-        // In a real app, save the file content via API
-        console.log('Saving file:', activeFile.name, fileContent);
-        setHasUnsavedChanges(false);
-        toast.success('File Saved!');
-    }, [activeFile, fileContent]);
+    const handleSave = useCallback(async () => {
+        if (!activeFile || !activeFile.id) {
+            toast.error('No active file selected or file ID missing.');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Authentication required. Please log in.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/projects/${projectId}/files/${activeFile.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ content: fileContent })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save file.');
+            }
+
+            setHasUnsavedChanges(false);
+            toast.success('File Saved!');
+        } catch (error) {
+            console.error('Error saving file:', error);
+            toast.error(`Error saving file: ${error.message}`);
+        }
+    }, [activeFile, fileContent, projectId]);
+
+    const getLanguageFromFile = (filename) => {
+        if (!filename) {
+            return 'plaintext';
+        }
+        const extension = filename.split('.').pop();
+        switch (extension) {
+            case 'js':
+            case 'jsx':
+                return 'javascript';
+            case 'ts':
+            case 'tsx':
+                return 'typescript';
+            case 'py':
+                return 'python';
+            case 'html':
+            case 'css':
+            case 'json':
+            case 'md':
+                return 'markdown';
+            case 'c':
+                return 'c';
+            case 'java':
+                return 'java';
+            default:
+                return 'plaintext';
+        }
+    };
 
     const handleRun = async () => {
+        if (!activeFile || !fileContent) {
+            toast.error('No file selected or file is empty.');
+            return;
+        }
+
         setIsRunning(true);
         setOutput('');
-        // In a real app, send code to the backend for execution
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-        setOutput(`> Executing ${activeFile.name}...
 
-Hello, World!
-Execution finished.`);
-        setIsRunning(false);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Authentication required. Please log in.');
+            setIsRunning(false);
+            return;
+        }
+
+        const language = getLanguageFromFile(activeFile.name);
+        if (language === 'plaintext') {
+            toast.error('Unsupported file type for execution.');
+            setIsRunning(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/code/execute`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ language, code: fileContent })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setOutput(data.stdout || data.stderr || 'Execution completed with no output.');
+                if (data.stderr) {
+                    toast.error('Execution completed with errors.');
+                }
+            } else {
+                setOutput(data.stderr || data.message || 'An unknown error occurred during execution.');
+                toast.error(`Execution failed: ${data.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error during code execution:', error);
+            setOutput(`Error: ${error.message}`);
+            toast.error(`Network error during execution: ${error.message}`);
+        } finally {
+            setIsRunning(false);
+        }
     };
     
     const handleCommit = () => {

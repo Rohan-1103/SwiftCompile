@@ -6,6 +6,14 @@ const os = require('os');
 
 const docker = new Docker();
 
+const convertPathForDocker = (windowsPath) => {
+    if (os.platform() === 'win32') {
+        // Convert C:\path\to\file to /c/path/to/file
+        return '/' + windowsPath.replace(/\\/g, '/').replace(/:/, '').toLowerCase();
+    }
+    return windowsPath;
+};
+
 const languageConfigs = {
     'python': {
         image: 'python:3.9-slim',
@@ -37,6 +45,11 @@ const executeCode = async (req, res) => {
     const tempFilePath = path.join(tempDir, `code${extension}`);
     fs.writeFileSync(tempFilePath, code);
 
+    // Convert tempDir to a Docker-compatible path for volume binding
+    const dockerTempDir = convertPathForDocker(tempDir);
+    // The path inside the container should be the same as the converted host path
+    const containerTempFilePath = path.join(dockerTempDir, `code${extension}`).replace(/\\/g, '/');
+
     let stdout = '';
     let stderr = '';
     let container;
@@ -50,9 +63,9 @@ const executeCode = async (req, res) => {
         try {
             container = await docker.createContainer({
             Image: image,
-            Cmd: command(tempFilePath),
+            Cmd: command(containerTempFilePath),
             HostConfig: {
-                Binds: [`${tempDir}:${tempDir}`],
+                Binds: [`${dockerTempDir}:${dockerTempDir}`],
                 Memory: 256 * 1024 * 1024, // 256MB
                 CpuShares: 512, // Relative weight
                 NetworkMode: 'none'
@@ -95,6 +108,8 @@ const executeCode = async (req, res) => {
 
         await stdoutPromise;
 
+        console.log('Docker Container Stdout:', stdout);
+        console.log('Docker Container Stderr:', stderr);
         res.json({ success: true, stdout, stderr });
 
     } catch (error) {
