@@ -138,6 +138,11 @@ exports.getFiles = async (req, res) => {
             result = await db.query('SELECT * FROM files WHERE project_id = $1 AND parent_id IS NULL ORDER BY is_folder DESC, name ASC', [projectId]);
         }
         
+        // --- DEBUGGING START ---
+        console.log("--- DEBUG (Backend): Sending files to frontend ---");
+        console.log(result.rows);
+        // --- DEBUGGING END ---
+
         res.status(200).json(result.rows);
 
     } catch (error) {
