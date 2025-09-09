@@ -112,12 +112,14 @@ exports.createFolder = async (req, res) => {
 };
 
 /**
- * RETRIEVES ALL FILES FOR A SPECIFIC PROJECT.
+ * RETRIEVES FILES FOR A SPECIFIC PROJECT.
+ * Can be filtered by a parent folder ID.
  * @param {object} req - The request object.
  * @param {object} res - The response object.
  */
 exports.getFiles = async (req, res) => {
     const { projectId } = req.params;
+    const { folderId } = req.query; // Get folderId from query parameters
     const userId = req.user.id;
 
     try {
@@ -127,7 +129,14 @@ exports.getFiles = async (req, res) => {
             return res.status(404).json({ message: 'Project not found or access denied.' });
         }
 
-        const result = await db.query('SELECT * FROM files WHERE project_id = $1 ORDER BY name', [projectId]);
+        let result;
+        if (folderId) {
+            // Fetch children of a specific folder
+            result = await db.query('SELECT * FROM files WHERE project_id = $1 AND parent_id = $2 ORDER BY is_folder DESC, name ASC', [projectId, folderId]);
+        } else {
+            // Fetch root-level files and folders
+            result = await db.query('SELECT * FROM files WHERE project_id = $1 AND parent_id IS NULL ORDER BY is_folder DESC, name ASC', [projectId]);
+        }
         
         res.status(200).json(result.rows);
 
