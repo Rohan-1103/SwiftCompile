@@ -138,10 +138,7 @@ exports.getFiles = async (req, res) => {
             result = await db.query('SELECT * FROM files WHERE project_id = $1 AND parent_id IS NULL ORDER BY is_folder DESC, name ASC', [projectId]);
         }
         
-        // --- DEBUGGING START ---
-        console.log("--- DEBUG (Backend): Sending files to frontend ---");
-        console.log(result.rows);
-        // --- DEBUGGING END ---
+        
 
         res.status(200).json(result.rows);
 
@@ -200,6 +197,8 @@ exports.deleteFile = async (req, res) => {
   const { fileId } = req.params;
   const userId = req.user.id;
 
+  console.log(`DEBUG: Attempting to delete file with ID: ${fileId} for user: ${userId}`);
+
   try {
     // SIMILAR TO UPDATE, WE ENSURE THE USER OWNS THE PROJECT THIS FILE BELONGS TO
     const result = await db.query(
@@ -209,6 +208,9 @@ exports.deleteFile = async (req, res) => {
        RETURNING f.id, f.path, f.project_id, f.is_folder`, // Added f.is_folder to returned columns
       [fileId, userId]
     );
+
+    console.log('DEBUG: DB Query Result:', result.rows);
+    console.log('DEBUG: DB Query rowCount:', result.rowCount);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: 'File not found or access denied.' });
@@ -234,7 +236,6 @@ exports.deleteFile = async (req, res) => {
 exports.syncFilesystemToDb = async (req, res) => {
     const projectId = req.params.id;
     const userId = req.user.id;
-    console.log('User ID from token:', userId);
 
     try {
         // 1. VERIFY PROJECT OWNERSHIP
@@ -260,16 +261,13 @@ exports.syncFilesystemToDb = async (req, res) => {
         if (fs.existsSync(projectPath)) {
             scanDir(projectPath);
         }
-        console.log('fsFiles:', fsFiles);
 
         // 3. GET ALL FILES FROM DB
         const dbFilesResult = await db.query('SELECT path FROM files WHERE project_id = $1', [projectId]);
         const dbFilePaths = new Set(dbFilesResult.rows.map(row => path.join(projectPath, row.path)));
-        console.log('dbFilePaths (after construction):', dbFilePaths);
 
         // 4. FIND FILES TO ADD
         const filesToAdd = fsFiles.filter(file => !dbFilePaths.has(file));
-        console.log('filesToAdd.length (before loop):', filesToAdd.length);
 
         // 5. SORT FILES BY PATH DEPTH
         filesToAdd.sort((a, b) => a.split(path.sep).length - b.split(path.sep).length);
@@ -277,27 +275,17 @@ exports.syncFilesystemToDb = async (req, res) => {
         // 6. INSERT FILES INTO DB
         for (const file of filesToAdd) {
             const relativePathRaw = path.relative(projectPath, file);
-            console.log(`  relativePathRaw: ${relativePathRaw}`);
             const relativePath = relativePathRaw.replace(/\\/g, '/');
             const parentDir = path.dirname(relativePath);
-            console.log(`  Modified relativePath: ${relativePath}`);
             const name = path.basename(file);
             const is_folder = fs.statSync(file).isDirectory();
             const content = is_folder ? null : fs.readFileSync(file, 'utf-8');
 
-            console.log(`Processing file: ${file}`);
-            console.log(`  relativePath: ${relativePath}`);
-            console.log(`  parentDir: ${parentDir}`);
-
             let parent_id = null;
             if (parentDir !== '.') {
-                console.log(`Finding parent for ${relativePath}. Parent dir: ${parentDir}`);
                 const parentResult = await db.query('SELECT id FROM files WHERE project_id = $1 AND path = $2', [projectId, parentDir]);
                 if (parentResult.rows.length > 0) {
                     parent_id = parentResult.rows[0].id;
-                    console.log(`Found parent for ${relativePath}. Parent ID: ${parent_id}`);
-                } else {
-                    console.log(`Parent not found for ${relativePath}`);
                 }
             }
 
@@ -305,14 +293,6 @@ exports.syncFilesystemToDb = async (req, res) => {
                 'INSERT INTO files (project_id, name, content, path, parent_id, is_folder) VALUES ($1, $2, $3, $4, $5, $6)',
                 [projectId, name, content, relativePath, parent_id, is_folder]
             );
-            console.log(`Inserted file: ${relativePath}`);
-            // VERIFY INSERTION
-            const verifyInsert = await db.query('SELECT id, path FROM files WHERE project_id = $1 AND path = $2', [projectId, relativePath]);
-            if (verifyInsert.rows.length > 0) {
-                console.log(`Successfully verified insertion of ${relativePath}. ID: ${verifyInsert.rows[0].id}`);
-            } else {
-                console.log(`Failed to verify insertion of ${relativePath}.`);
-            }
         }
 
         res.status(200).json({ message: `Synchronization complete. ${filesToAdd.length} items added.` });
