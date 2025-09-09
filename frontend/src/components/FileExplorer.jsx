@@ -31,7 +31,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
             setTreeData(files.map(file => ({
                 id: file.id.toString(),
                 name: file.name,
-                children: file.is_folder ? undefined : null,
+                children: file.is_folder ? [] : null,
                 data: file, // Keep original file data
             })));
             setTreeKey(prevKey => prevKey + 1);
@@ -71,7 +71,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
         return files.map(file => ({
             id: file.id.toString(),
             name: file.name,
-            children: file.is_folder ? undefined : null,
+            children: file.is_folder ? [] : null,
             data: file, // Keep original file data
         }));
     }, [projectId]);
