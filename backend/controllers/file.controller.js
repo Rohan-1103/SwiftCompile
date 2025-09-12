@@ -149,6 +149,35 @@ exports.getFiles = async (req, res) => {
 };
 
 /**
+ * GETS A FILE BY ITS ID.
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ */
+exports.getFileById = async (req, res) => {
+    const { fileId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const result = await db.query(
+            `SELECT f.* FROM files f
+             JOIN projects p ON f.project_id = p.id
+             WHERE f.id = $1 AND p.user_id = $2`,
+            [fileId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'File not found or access denied.' });
+        }
+
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error retrieving file:', error);
+        res.status(500).json({ message: 'Failed to retrieve file.' });
+    }
+};
+
+
+/**
  * UPDATES THE CONTENT OF A SPECIFIC FILE.
  * @param {object} req - The request object.
  * @param {object} res - The response object.
@@ -189,48 +218,74 @@ exports.updateFile = async (req, res) => {
 };
 
 /**
- * DELETES A SPECIFIC FILE.
+ * DELETES A SPECIFIC FILE OR FOLDER.
  * @param {object} req - The request object.
  * @param {object} res - The response object.
  */
 exports.deleteFile = async (req, res) => {
-  const { fileId } = req.params;
-  const userId = req.user.id;
+    const { fileId } = req.params;
+    const userId = req.user.id;
 
-  console.log(`DEBUG: Attempting to delete file with ID: ${fileId} for user: ${userId}`);
+    try {
+        // First, get the file/folder details to verify ownership and get path info
+        const fileResult = await db.query(
+            `SELECT f.id, f.path, f.project_id, f.is_folder 
+             FROM files f
+             JOIN projects p ON f.project_id = p.id
+             WHERE f.id = $1 AND p.user_id = $2`,
+            [fileId, userId]
+        );
 
-  try {
-    // SIMILAR TO UPDATE, WE ENSURE THE USER OWNS THE PROJECT THIS FILE BELONGS TO
-    const result = await db.query(
-      `DELETE FROM files f
-       USING projects p
-       WHERE f.id = $1 AND f.project_id = p.id AND p.user_id = $2
-       RETURNING f.id, f.path, f.project_id, f.is_folder`, // Added f.is_folder to returned columns
-      [fileId, userId]
-    );
+        if (fileResult.rows.length === 0) {
+            return res.status(404).json({ message: 'File not found or access denied.' });
+        }
 
-    console.log('DEBUG: DB Query Result:', result.rows);
-    console.log('DEBUG: DB Query rowCount:', result.rowCount);
+        const fileToDelete = fileResult.rows[0];
+        const projectPath = path.join(__dirname, '..', '..', 'user_projects', fileToDelete.project_id.toString());
+        const fullPath = path.join(projectPath, fileToDelete.path);
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: 'File not found or access denied.' });
+        // RECURSIVE DELETE FUNCTION FOR DB
+        const deleteFromDbRecursive = async (id, isFolder) => {
+            if (isFolder) {
+                const children = await db.query('SELECT id, is_folder FROM files WHERE parent_id = $1', [id]);
+                for (const child of children.rows) {
+                    await deleteFromDbRecursive(child.id, child.is_folder);
+                }
+            }
+            await db.query('DELETE FROM files WHERE id = $1', [id]);
+        };
+
+        // Start transaction
+        const client = await db.getClient();
+        try {
+            await client.query('BEGIN');
+
+            // Perform recursive delete in DB
+            await deleteFromDbRecursive(fileToDelete.id, fileToDelete.is_folder);
+
+            // Delete from filesystem
+            if (fs.existsSync(fullPath)) {
+                if (fileToDelete.is_folder) {
+                    fs.rmSync(fullPath, { recursive: true, force: true });
+                } else {
+                    fs.unlinkSync(fullPath);
+                }
+            }
+
+            await client.query('COMMIT');
+            res.status(200).json({ message: 'File or folder deleted successfully.' });
+
+        } catch (dbError) {
+            await client.query('ROLLBACK');
+            throw dbError;
+        } finally {
+            client.release();
+        }
+
+    } catch (error) {
+        console.error('Error deleting file/folder:', error);
+        res.status(500).json({ message: 'Failed to delete file or folder.' });
     }
-
-    const projectPath = path.join(__dirname, '..', '..', 'user_projects', result.rows[0].project_id.toString());
-    const filePath = path.join(projectPath, result.rows[0].path);
-
-    // If it's a folder, remove the directory recursively
-    if (result.rows[0].is_folder) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-    } else if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
-
-    res.status(200).json({ message: 'File deleted successfully.' });
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    res.status(500).json({ message: 'Failed to delete file.' });
-  }
 };
 
 exports.syncFilesystemToDb = async (req, res) => {

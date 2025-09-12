@@ -9,6 +9,9 @@ router.use(verifyToken);
 // GET /api/projects/:projectId/files - GET ALL FILES FOR A PROJECT
 router.get('/', fileController.getFiles);
 
+// GET /api/files/:fileId - GET A SINGLE FILE BY ID
+router.get('/:fileId', fileController.getFileById);
+
 // POST /api/projects/:projectId/files - CREATE A NEW FILE IN A PROJECT
 router.post('/', fileController.createFile);
 

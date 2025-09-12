@@ -7,13 +7,20 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
     const [selectedNode, setSelectedNode] = useState(null);
     const [treeKey, setTreeKey] = useState(0);
 
+    const mapFileToNode = (file) => ({
+        id: file.id.toString(),
+        name: file.name,
+        is_folder: file.is_folder,
+        children: file.is_folder ? [] : null,
+        ...file
+    });
+
     useEffect(() => {
         if (!projectId) return;
 
         const fetchRootFiles = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
-                // Handle not authenticated
                 return;
             }
             const response = await fetch(`/api/projects/${projectId}/files`, {
@@ -23,17 +30,11 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
             });
 
             if (!response.ok) {
-                // Handle error
                 return;
             }
 
             const files = await response.json();
-            setTreeData(files.map(file => ({
-                id: file.id.toString(),
-                name: file.name,
-                children: file.is_folder ? [] : null,
-                data: file, // Keep original file data
-            })));
+            setTreeData(files.map(mapFileToNode));
             setTreeKey(prevKey => prevKey + 1);
         };
 
@@ -41,19 +42,12 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
     }, [projectId]);
 
     const getChildren = useCallback(async (node) => {
-        console.log("--- DEBUG (Frontend): getChildren called ---");
-        console.log("--- DEBUG (Frontend): node object:", node);
-        console.log("--- DEBUG (Frontend): node.data.data.id:", node.data.data.id);
-
         const token = localStorage.getItem('token');
         if (!token) {
-            // Handle not authenticated
             return [];
         }
-        const folderId = node.data.data.id; // Corrected: Use the numeric id from the raw data
+        const folderId = node.data.id;
         const url = `/api/projects/${projectId}/files?folderId=${folderId}`;
-
-        console.log("--- DEBUG (Frontend): Constructed URL:", url);
 
         const response = await fetch(url, {
             headers: {
@@ -62,18 +56,11 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
         });
 
         if (!response.ok) {
-            // Handle error
             return [];
         }
 
         const files = await response.json();
-        console.log("--- DEBUG (Frontend): Received children from backend:", files);
-        return files.map(file => ({
-            id: file.id.toString(),
-            name: file.name,
-            children: file.is_folder ? [] : null,
-            data: file, // Keep original file data
-        }));
+        return files.map(mapFileToNode);
     }, [projectId]);
 
     const handleCreateFile = async (parentId) => {
@@ -90,7 +77,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
             name: fileName,
             is_folder: false,
             parent_id: parentId,
-            content: '' // Or some default content
+            content: ''
         };
 
         try {
@@ -118,10 +105,10 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
     const handleCreateClick = () => {
         let parentId = null;
         if (selectedNode) {
-            if (selectedNode.data.data.is_folder) {
-                parentId = selectedNode.data.data.id;
+            if (selectedNode.data.is_folder) {
+                parentId = selectedNode.data.id;
             } else {
-                parentId = selectedNode.data.data.parent_id;
+                parentId = selectedNode.data.parent_id;
             }
         }
         handleCreateFile(parentId);
@@ -139,10 +126,10 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
 
         let parentId = null;
         if (selectedNode) {
-            if (selectedNode.data.data.is_folder) {
-                parentId = selectedNode.data.data.id;
+            if (selectedNode.data.is_folder) {
+                parentId = selectedNode.data.id;
             } else {
-                parentId = selectedNode.data.data.parent_id;
+                parentId = selectedNode.data.parent_id;
             }
         }
 
@@ -186,7 +173,7 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
         }
 
         try {
-            const response = await fetch(`/api/files/${fileId}`, {
+            const response = await fetch(`/api/projects/${projectId}/files/${fileId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -206,22 +193,17 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
     };
 
     const Node = ({ node, style, dragHandle }) => {
-        console.log("--- DEBUG (Frontend Node): node object:", node);
-        console.log("--- DEBUG (Frontend Node): node.isLeaf:", node.isLeaf);
-        console.log("--- DEBUG (Frontend Node): node.isInternal:", node.isInternal);
-        console.log("--- DEBUG (Frontend Node): node.data.data.is_folder:", node.data.data.is_folder);
-
-        const Icon = node.data.data.is_folder ? Folder : File;
+        const Icon = node.data.is_folder ? Folder : File;
         return (
             <div
                 ref={dragHandle}
                 style={style}
                 className={`flex items-center gap-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md px-2 ${node.isSelected ? 'bg-blue-500/20 border border-blue-500' : ''}`}
                 onClick={() => {
-                    if (node.data.data.is_folder) { // Check the raw data's is_folder
+                    if (node.data.is_folder) {
                         node.toggle();
                     } else {
-                        onFileSelect(node.data.data);
+                        onFileSelect(node.data);
                     }
                 }}
             >
@@ -229,8 +211,8 @@ const FileExplorer = ({ projectId, onFileSelect }) => {
                 <span>{node.data.name}</span>
                 <button
                     onClick={(e) => {
-                        e.stopPropagation(); // Prevent node selection/expansion
-                        handleDelete(node.data.data.id, node.data.data.is_folder);
+                        e.stopPropagation();
+                        handleDelete(node.data.id, node.data.is_folder);
                     }}
                     className="ml-auto p-1 hover:bg-red-200 dark:hover:bg-red-700 rounded"
                 >
