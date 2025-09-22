@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import { Play, Save, GitCommit, ChevronRight, Loader2 } from 'lucide-react';
+import { Play, Save, ChevronRight, Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 
 // MANUALLY CREATED COMPONENTS, MAKE SURE TO CREATE THESE FILES
@@ -180,11 +180,6 @@ const EditorPage = () => {
             setIsRunning(false);
         }
     };
-    
-    const handleCommit = () => {
-        toast('Committing changes...', { icon: '🚀' });
-        // Git integration logic here
-    };
 
     // Handle Ctrl+S / Cmd+S for saving
     useEffect(() => {
@@ -227,10 +222,6 @@ const EditorPage = () => {
                     <button onClick={handleSave} disabled={!hasUnsavedChanges} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         <Save className="w-4 h-4" />
                         <span>Save</span>
-                    </button>
-                    <button onClick={handleCommit} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors">
-                        <GitCommit className="w-4 h-4" />
-                        <span>Commit</span>
                     </button>
                 </div>
             </header>

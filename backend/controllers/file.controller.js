@@ -9,47 +9,73 @@ const path = require('path');
  */
 exports.createFile = async (req, res) => {
   const { projectId } = req.params;
-  const { name, content, parent_id } = req.body; // Changed parentId to parent_id
-  const userId = req.user.id; // ASSUMING VERIFYTOKEN MIDDLEWARE
+  const { name, content, parent_id } = req.body;
+  const userId = req.user.id;
+
+  console.log('--- CREATE FILE REQUEST ---');
+  console.log('Project ID:', projectId);
+  console.log('User ID:', userId);
+  console.log('File Name:', name);
+  console.log('Parent ID:', parent_id);
 
   if (!name) {
     return res.status(400).json({ message: 'File name is required.' });
   }
 
   try {
-    // VERIFY THAT THE PROJECT EXISTS AND BELONGS TO THE USER
     const projectCheck = await db.query('SELECT id FROM projects WHERE id = $1 AND user_id = $2', [projectId, userId]);
     if (projectCheck.rows.length === 0) {
       return res.status(404).json({ message: 'Project not found or access denied.' });
     }
+    console.log('Project verified.');
 
-    const projectPath = path.join(__dirname, '..', '..', 'user_projects', projectId.toString()); // Use projectId.toString()
+    const projectPath = path.join(__dirname, '..', '..', 'user_projects', projectId.toString());
     if (!fs.existsSync(projectPath)) {
       fs.mkdirSync(projectPath, { recursive: true });
+      console.log('Project path created:', projectPath);
     }
 
     let newPath = path.join(projectPath, name);
+    let relativePath;
+
     if (parent_id) {
-        // Validate parent_id is an existing folder
-        const parentResult = await db.query('SELECT path, is_folder FROM files WHERE id = $1 AND project_id = $2', [parent_id, projectId]);
-        if (parentResult.rows.length === 0 || !parentResult.rows[0].is_folder) {
-            return res.status(400).json({ message: 'Parent ID must be an existing folder.' });
-        }
-        const parentPath = parentResult.rows[0].path;
-        newPath = path.join(projectPath, parentPath, name);
+      console.log('Parent ID provided. Validating parent...');
+      const parentResult = await db.query('SELECT path, is_folder FROM files WHERE id = $1 AND project_id = $2', [parent_id, projectId]);
+      if (parentResult.rows.length === 0 || !parentResult.rows[0].is_folder) {
+        console.error('Parent ID validation failed.');
+        return res.status(400).json({ message: 'Parent ID must be an existing folder.' });
+      }
+      const parentPath = parentResult.rows[0].path;
+      console.log('Parent path:', parentPath);
+
+      const fullParentPath = path.join(projectPath, parentPath);
+      if (!fs.existsSync(fullParentPath)) {
+          fs.mkdirSync(fullParentPath, { recursive: true });
+          console.log('Parent directory created:', fullParentPath);
+      }
+
+      newPath = path.join(fullParentPath, name);
+      relativePath = path.join(parentPath, name);
+
+    } else {
+      console.log('No parent ID. Creating file in root.');
+      relativePath = name;
     }
+    
+    console.log('New file path:', newPath);
+    console.log('Relative path:', relativePath);
 
     fs.writeFileSync(newPath, content || '');
+    console.log('File created on filesystem.');
 
-    const relativePath = path.relative(projectPath, newPath);
-
-    // INSERT THE NEW FILE, setting is_folder to FALSE
     const result = await db.query(
       'INSERT INTO files (project_id, name, content, path, parent_id, is_folder) VALUES ($1, $2, $3, $4, $5, FALSE) RETURNING *',
       [projectId, name, content || '', relativePath, parent_id]
     );
 
+    console.log('File metadata saved to database.');
     res.status(201).json(result.rows[0]);
+
   } catch (error) {
     console.error('Error creating file:', error);
     res.status(500).json({ message: 'Failed to create file.' });
