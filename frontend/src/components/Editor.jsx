@@ -57,6 +57,11 @@ function getLanguageFromFile(filename) {
             return 'typescript';
         case 'py':
             return 'python';
+        case 'c':
+        case 'cpp':
+            return 'c';
+        case 'java':
+            return 'java';
         case 'html':
             return 'html';
         case 'css':
