@@ -6,7 +6,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Navbar from './components/Navbar';
 import DashboardPage from './pages/DashboardPage';
-import EditorPage from './pages/EditorPage'; // IMPORT THE NEW EDITOR PAGE
+import EditorPage from './pages/EditorPage';
+import AboutPage from './pages/AboutPage';
 
 function App() {
   const location = useLocation();
@@ -17,10 +18,11 @@ function App() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/editor/:projectId" element={<EditorPage />} /> {/* ADD THE EDITOR ROUTE */}
+          <Route path="/editor/:projectId" element={<EditorPage />} />
           {/* Add protected routes here later */}
         </Routes>
       </AnimatePresence>

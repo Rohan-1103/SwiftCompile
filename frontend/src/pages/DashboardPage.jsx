@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import ProjectCard from '../components/ProjectCard';
 import SkeletonCard from '../components/SkeletonCard';
 
@@ -101,10 +101,7 @@ const DashboardPage = () => {
             <header className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Projects</h1>
                 <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input type="text" placeholder="Search projects..." className="pl-10 pr-4 py-2 rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
+                    
                     <button onClick={handleNewProject} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors">
                         <Plus className="w-5 h-5" />
                         New Project
@@ -115,7 +112,7 @@ const DashboardPage = () => {
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
 
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-8">
                     {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
                 </div>
             ) : projects.length === 0 ? (
@@ -127,7 +124,7 @@ const DashboardPage = () => {
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-8">
                     {projects.map(project => (
                         <ProjectCard 
                             key={project.id} 

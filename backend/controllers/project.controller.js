@@ -81,7 +81,16 @@ exports.getProjects = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const result = await db.query('SELECT * FROM projects WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    const result = await db.query(`
+      SELECT p.*, (
+        SELECT MAX(f.updated_at)
+        FROM files f
+        WHERE f.project_id = p.id
+      ) as updated_at
+      FROM projects p
+      WHERE p.user_id = $1
+      ORDER BY p.created_at DESC
+    `, [userId]);
     res.status(200).json(result.rows);
   } catch (error) {
     console.error('Error getting projects:', error);
