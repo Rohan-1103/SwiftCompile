@@ -15,17 +15,19 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/editor/:projectId" element={<EditorPage />} />
-          {/* Add protected routes here later */}
-        </Routes>
-      </AnimatePresence>
+      <main className="flex-grow p-8">
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/editor/:projectId" element={<EditorPage />} />
+            {/* Add protected routes here later */}
+          </Routes>
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
