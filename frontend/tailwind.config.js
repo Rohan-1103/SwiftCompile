@@ -15,6 +15,10 @@ module.exports = {
         'vision-text-dark': '#E5E7EB', // Light text on dark backgrounds
         'vision-text-light': '#374151', // Dark text on light backgrounds
       },
+      fontFamily: {
+        sans: ['"Brush Script MT"', 'cursive'], // All sans-serif fonts will now be cursive
+        mono: ['Fira Code', 'monospace'], // For code snippets
+      },
     },
   },
   plugins: [],

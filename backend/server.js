@@ -33,10 +33,7 @@ app.use('/api/code', codeRoutes);
 // MANUAL_CHANGE_REQUIRED: Ensure this port is open and accessible in your deployment environment.
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
+// Start the server and listen for incoming requests
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = { app, server };
-
-require('./websocket.js');

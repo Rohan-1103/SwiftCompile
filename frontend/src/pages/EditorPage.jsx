@@ -17,13 +17,14 @@ const EditorPage = () => {
     const [activeFile, setActiveFile] = useState(null);
     const [fileContent, setFileContent] = useState('');
     const [isRunning, setIsRunning] = useState(false);
-    const [runCounter, setRunCounter] = useState(0);
+    const [output, setOutput] = useState('');
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     useEffect(() => {
         const fetchProject = async () => {
             const token = localStorage.getItem('token');
             if (!token) {
+                // Handle case where user is not authenticated
                 toast.error('Authentication token not found. Please log in.');
                 return;
             }
@@ -54,7 +55,7 @@ const EditorPage = () => {
         console.log('handleFileSelect called. file:', file);
         console.log('handleFileSelect called. file.name:', file.name);
         setActiveFile(file);
-        setFileContent(file.content || '');
+        setFileContent(file.content || ''); // Use file.content if available, otherwise an empty string
         setHasUnsavedChanges(false);
     };
 
@@ -127,19 +128,57 @@ const EditorPage = () => {
         }
     };
 
-    const handleRun = () => {
+    const handleRun = async () => {
         if (!activeFile || !fileContent) {
             toast.error('No file selected or file is empty.');
+            return;
+        }
+
+        setIsRunning(true);
+        setOutput('');
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Authentication required. Please log in.');
+            setIsRunning(false);
             return;
         }
 
         const language = getLanguageFromFile(activeFile.name);
         if (language === 'plaintext') {
             toast.error('Unsupported file type for execution.');
+            setIsRunning(false);
             return;
         }
 
-        setRunCounter(prev => prev + 1);
+        try {
+            const response = await fetch(`/api/code/execute`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ language, code: fileContent })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setOutput(data.stdout || data.stderr || 'Execution completed with no output.');
+                if (data.stderr) {
+                    toast.error('Execution completed with errors.');
+                }
+            } else {
+                setOutput(data.stderr || data.message || 'An unknown error occurred during execution.');
+                toast.error(`Execution failed: ${data.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error during code execution:', error);
+            setOutput(`Error: ${error.message}`);
+            toast.error(`Network error during execution: ${error.message}`);
+        } finally {
+            setIsRunning(false);
+        }
     };
 
     // Handle Ctrl+S / Cmd+S for saving
@@ -201,11 +240,7 @@ const EditorPage = () => {
                     />
                   </Allotment.Pane>
                   <Allotment.Pane minSize={150}>
-                    <Terminal 
-                        runCounter={runCounter} 
-                        language={getLanguageFromFile(activeFile?.name)} 
-                        code={fileContent} 
-                    />
+                    <Terminal output={output} />
                   </Allotment.Pane>
                 </Allotment>
               </Allotment.Pane>

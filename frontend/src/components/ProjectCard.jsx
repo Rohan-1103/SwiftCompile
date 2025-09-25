@@ -7,7 +7,6 @@ const ProjectCard = ({ project, onOpen, onDelete }) => {
     const langIcons = {
         javascript: <FileCode className="w-6 h-6 text-yellow-400" />,
         python: <FileCode className="w-6 h-6 text-blue-400" />,
-        java: <FileCode className="w-6 h-6 text-red-400" />,
         // Add other languages here
         default: <FileCode className="w-6 h-6 text-gray-400" />
     };
